@@ -15,6 +15,10 @@ CORS(app)
 # Initialize OpenAI client
 client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+@app.route("/", methods=["GET"])
+def health():
+    return "🥩 RoastMeAI API is running!", 200
+
 @app.route("/roast", methods=["POST"])
 def roast():
     try:
@@ -82,4 +86,5 @@ def roast():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # This line is ignored by Gunicorn, but useful locally:
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)
