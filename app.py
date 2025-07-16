@@ -43,11 +43,11 @@ def roast():
         targeted_features = random.sample(features, num_features)
         feature_list = ", ".join(targeted_features)
 
-        # Prompt designed to prevent fallback responses
+        # Build concise, 3‑line‑max prompt
         prompt = (
             f"Roast the person's {feature_list} shown in the image. "
-            f"This is roast level {level}/5. Be brutally funny, sharp, and clever — not offensive. "
-            f"Comment directly on what you SEE in the image. No generic intros. Keep it under 50 words."
+            f"Level {level}/5. Be brutally funny, sharp, and clever — not offensive. "
+            "Deliver your roast in **no more than 3 lines**, each line short and punchy."
         )
 
         response = client.chat.completions.create(
@@ -56,9 +56,10 @@ def roast():
                 {
                     "role": "system",
                     "content": (
-                        "You're a roast master AI trained to visually analyze photos. "
-                        "Always roast based on visible features — hair, eyes, lips, clothes, etc. "
-                        "NEVER say 'I don’t know who this is'. Focus on what you see. Be direct, creative, and hilarious."
+                        "You’re a roast master AI trained to visually analyze photos. "
+                        "Roast only based on visible features — hair, eyes, lips, clothes, etc. "
+                        "Never say “I don’t know who this is.” "
+                        "Output must be **3 lines max**, each line punchy, no extra fluff."
                     )
                 },
                 {
@@ -86,5 +87,5 @@ def roast():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    # This line is ignored by Gunicorn, but useful locally:
+    # Locally run on port 5000 or $PORT in production
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)
