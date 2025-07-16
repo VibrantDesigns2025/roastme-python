@@ -15,9 +15,11 @@ CORS(app)
 # Initialize OpenAI client
 client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+
 @app.route("/", methods=["GET"])
 def health():
     return "🥩 RoastMeAI API is running!", 200
+
 
 @app.route("/roast", methods=["POST"])
 def roast():
@@ -31,51 +33,35 @@ def roast():
         # Convert image to base64
         image_data = base64.b64encode(image_file.read()).decode("utf-8")
 
-        # Safe feature list (no body)
-        features = [
-            "hair", "lips", "eyes", "clothes",
-            "ears", "jewelry", "pose", "expression", "vibe"
-        ]
+        # Feature list
+        features = ["hair", "lips", "eyes", "clothes", "ears", "jewelry", "pose", "expression", "vibe"]
 
-        # Choose features based on roast level
+        # Pick features based on level
         level = int(roast_level) if roast_level.isdigit() else 3
-        num_features = min(level, 4)
-        targeted_features = random.sample(features, num_features)
-        feature_list = ", ".join(targeted_features)
+        targeted = random.sample(features, min(level, 4))
+        feature_list = ", ".join(targeted)
 
-        # Build concise, 3‑line‑max prompt
+        # 👉 One‑sentence prompt
         prompt = (
-            f"Roast the person's {feature_list} shown in the image. "
-            f"Level {level}/5. Be brutally funny, sharp, and clever — not offensive. "
-            "Deliver your roast in **no more than 3 lines**, each line short and punchy."
+            f"Roast the person's {feature_list} in exactly one punchy sentence. "
+            f"This is roast level {level}/5. Be funny, sharp, and concise—no intros or extra sentences."
         )
 
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {
-                    "role": "system",
-                    "content": (
-                        "You’re a roast master AI trained to visually analyze photos. "
-                        "Roast only based on visible features — hair, eyes, lips, clothes, etc. "
-                        "Never say “I don’t know who this is.” "
-                        "Output must be **3 lines max**, each line punchy, no extra fluff."
-                    )
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt},
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/jpeg;base64,{image_data}"
-                            }
-                        }
-                    ]
-                }
+                {"role": "system",
+                 "content": (
+                     "You're a roast master AI: always output a single biting sentence "
+                     "focused on visible features (hair, eyes, lips, clothes, etc.)."
+                 )},
+                {"role": "user",
+                 "content": [
+                     {"type": "text", "text": prompt},
+                     {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_data}"}}
+                 ]}
             ],
-            max_tokens=100
+            max_tokens=60
         )
 
         roast_text = response.choices[0].message.content.strip()
@@ -86,6 +72,10 @@ def roast():
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+
 if __name__ == "__main__":
-    # Locally run on port 5000 or $PORT in production
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)
+    app.run(
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", 5000)),
+        debug=True
+    )
