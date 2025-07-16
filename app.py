@@ -34,7 +34,10 @@ def roast():
         image_data = base64.b64encode(image_file.read()).decode("utf-8")
 
         # Feature list
-        features = ["hair", "lips", "eyes", "clothes", "ears", "jewelry", "pose", "expression", "vibe"]
+        features = [
+            "hair", "lips", "eyes", "clothes",
+            "ears", "jewelry", "pose", "expression", "vibe"
+        ]
 
         # Pick features based on level
         level = int(roast_level) if roast_level.isdigit() else 3
@@ -50,16 +53,25 @@ def roast():
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {"role": "system",
-                 "content": (
-                     "You're a roast master AI: always output a single biting sentence "
-                     "focused on visible features (hair, eyes, lips, clothes, etc.)."
-                 )},
-                {"role": "user",
-                 "content": [
-                     {"type": "text", "text": prompt},
-                     {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_data}"}}
-                 ]}
+                {
+                    "role": "system",
+                    "content": (
+                        "You're a roast master AI: always output a single biting sentence "
+                        "focused on visible features (hair, eyes, lips, clothes, etc.)."
+                    )
+                },
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": prompt},
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{image_data}"
+                            }
+                        }
+                    ]
+                }
             ],
             max_tokens=60
         )
